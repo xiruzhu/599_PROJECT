@@ -1,8 +1,8 @@
 MODELS_DIR = 'models/'
 
 lr = 0.0075
-dim = 300
-ws = 100
+dim = 64
+ws = 50
 epoch = 50
 minCount = 4
 neg = 5
@@ -13,6 +13,7 @@ from gensim.models import Word2Vec
 from gensim.models.word2vec import Text8Corpus
 import os
 import process_text
+import numpy as np
 
 # Same values as used for fastText training above
 params = {
@@ -60,6 +61,3 @@ def train_models(corpus_file, output_name):
 
 #preprocess_text("shakespeare.txt", "preprocessed_shakespeare.txt");
 model = train_models('preprocessed_shakespeare.txt', 'shakespeare')
-
-value = (model['glorious']);
-print(model.most_similar(positive=[value], negative=[] , topn=25))
