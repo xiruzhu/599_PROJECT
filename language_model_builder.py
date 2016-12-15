@@ -64,7 +64,7 @@ def split_punct(some_string):
     accumulated_word = [];
     word = "";
     for character in some_string:
-        if character.isalnum():
+        if character.isalnum() or character == '\'':
             word += str(character);
         else:
             accumulated_word.append(word);
@@ -159,14 +159,25 @@ def create_corpus(parallel_corpus, file_name):
     file_id.write(result);
     file_id.close();
 
+def create_non_parallel_corpus(non_parallel_corpus, file_name_orig, file_name_trans):
+    bar = Bar('Processing', max=(len(non_parallel_corpus)));
+    for i in range(0, len(non_parallel_corpus)):
+        file_id = open(file_name_orig+'_'+str(i)+'.txt', 'w');
+        for j in range(0, len(non_parallel_corpus[i][0])):
+            file_id.write(non_parallel_corpus[i][0][j] + '\n');
+        file_id.close();
+        file_id = open(file_name_trans+'_'+str(i)+'.txt', 'w');
+        for j in range(0, len(non_parallel_corpus[i][1])):
+            file_id.write(non_parallel_corpus[i][1][j] + '\n');
+        file_id.close();
+        bar.next();
+    bar.finish();
+
 orig_raw, trans_raw = read_file("original_text.txt", "translation_text.txt");
 parallel_corpus, non_parallel_corpus = create_sentence_set(orig_raw, trans_raw);
-create_corpus(parallel_corpus, 'models/corpora.en-sk');
+# create_corpus(parallel_corpus, 'models/corpora.en-sk');
 
-dict_table = build_dictionary_table(orig_raw, trans_raw);
-dict_table = calc_prob_table(dict_table, 5);
-write_dict_to_csv(dict_table, 'models/dict.csv');
-
-for key in dict_table:
-    if 'i.' in dict_table[key]:
-        print("ERRROR");
+# dict_table = build_dictionary_table(orig_raw, trans_raw);
+# dict_table = calc_prob_table(dict_table, 1);
+# write_dict_to_csv(dict_table, 'models/dict.csv');
+create_non_parallel_corpus(non_parallel_corpus, 'models/align_model/non_parallel_corpus/orig', 'models/align_model/non_parallel_corpus/trans');

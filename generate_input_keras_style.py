@@ -38,7 +38,7 @@ def split_punct(some_string):
     accumulated_word = [];
     word = "";
     for character in some_string:
-        if character.isalnum():
+        if character.isalnum() or character == '\'':
             word += str(character);
         else:
             accumulated_word.append(word);
