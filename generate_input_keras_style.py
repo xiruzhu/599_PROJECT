@@ -34,6 +34,20 @@ VALIDATION_SPLIT = 0.0;
 START_TOKEN = '100 '
 END_TOKEN = ' 101'
 
+def split_punct(some_string):
+    accumulated_word = [];
+    word = "";
+    for character in some_string:
+        if character.isalnum():
+            word += str(character);
+        else:
+            accumulated_word.append(word);
+            accumulated_word.append(str(character));
+            word = "";
+    if len(word) > 0:
+        accumulated_word.append(word);
+    return accumulated_word;
+
 def read_file(orig_file_name, trans_file_name, max_sentence_length):
     read_file = open(orig_file_name, 'r');
     read_orig_raw = json.load(read_file);
@@ -67,6 +81,16 @@ def read_file(orig_file_name, trans_file_name, max_sentence_length):
             continue;
         orig =  process_text.get_tokens(compacted_orig_result[i].encode('ascii', 'ignore'));
         trans = process_text.get_tokens(compacted_trans_result[i].encode('ascii', 'ignore'));
+        temp = [];
+        for i in range(0, len(orig)):
+            if not (ispunct(orig[i]) and len(orig[i]) > 1):
+                temp.extend(split_punct(orig[i]));
+        orig = temp;
+        temp = [];
+        for i in range(0, len(trans)):
+            if not (ispunct(trans[i]) and len(trans[i]) > 1):
+                temp.extend(split_punct(trans[i]));
+        trans = temp;
         for i in range(0, len(orig)):
             if len(orig[i]) > 2:
                 orig[i].replace('\"', '');

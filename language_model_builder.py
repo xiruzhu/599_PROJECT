@@ -33,6 +33,19 @@ def read_file(orig_file_name, trans_file_name):
             continue;
         orig =  process_text.get_tokens(compacted_orig_result[i].encode('ascii', 'ignore'));
         trans = process_text.get_tokens(compacted_trans_result[i].encode('ascii', 'ignore'));
+
+        temp = [];
+        for i in range(0, len(orig)):
+            if not (ispunct(orig[i]) and len(orig[i]) > 1):
+                temp.extend(split_punct(orig[i]));
+        orig = temp;
+        temp = [];
+        for i in range(0, len(trans)):
+            if not (ispunct(trans[i]) and len(trans[i]) > 1):
+                temp.extend(split_punct(trans[i]));
+        trans = temp;
+
+
         for i in range(0, len(orig)):
             if len(orig[i]) > 2:
                 orig[i].replace('\"', '');
@@ -47,6 +60,20 @@ def read_file(orig_file_name, trans_file_name):
     bar.finish();
     return final_orig_text, final_trans_text
 
+def split_punct(some_string):
+    accumulated_word = [];
+    word = "";
+    for character in some_string:
+        if character.isalnum():
+            word += str(character);
+        else:
+            accumulated_word.append(word);
+            accumulated_word.append(str(character));
+            word = "";
+    if len(word) > 0:
+        accumulated_word.append(word);
+    return accumulated_word;
+
 def ispunct(some_string):
     return not any(char.isalnum() for char in some_string);
 
@@ -57,6 +84,8 @@ def build_dictionary_table(orig_raw, trans_raw):
         orig_tokens = process_text.get_tokens(orig_raw[i]);
         trans_tokens = process_text.get_tokens(trans_raw[i]);
         for j in range(0, len(orig_tokens)):
+            if ispunct(orig_tokens[j]):
+                continue;
             if not orig_tokens[j] in dictionary_table:
                 dictionary_table[orig_tokens[j]] = {};
             if trans_raw[i].find(orig_tokens[j]) >= 0:
@@ -76,18 +105,22 @@ def build_dictionary_table(orig_raw, trans_raw):
     bar.finish();
     return dictionary_table; 
 
-def calc_prob_table(dictionary_table):
+def calc_prob_table(dictionary_table, min_size):
     bar = Bar('Processing', max=(len(dictionary_table)));
+    new_dict_table = {};
     for words in dictionary_table:
         total = 0.0;
         for definition in dictionary_table[words]:
-            total += dictionary_table[words][definition];
-        
+            if dictionary_table[words][definition] > min_size:
+                total += dictionary_table[words][definition];
+
+        new_dict_table[words] = {};
         for definition in dictionary_table[words]:
-            dictionary_table[words][definition] = dictionary_table[words][definition]/float(total);
+            if dictionary_table[words][definition] > min_size:
+                new_dict_table[words][definition] = dictionary_table[words][definition]/float(total);
         bar.next();
     bar.finish();
-    return dictionary_table;
+    return new_dict_table;
 
 def write_dict_to_csv(dict_table, file_name):
     file_str = "";
@@ -126,11 +159,14 @@ def create_corpus(parallel_corpus, file_name):
     file_id.write(result);
     file_id.close();
 
-
 orig_raw, trans_raw = read_file("original_text.txt", "translation_text.txt");
 parallel_corpus, non_parallel_corpus = create_sentence_set(orig_raw, trans_raw);
 create_corpus(parallel_corpus, 'models/corpora.en-sk');
 
-# dict_table = build_dictionary_table(orig_raw, trans_raw);
-# dict_table = calc_prob_table(dict_table);
-# write_dict_to_csv(dict_table, 'models/dict.csv');
+dict_table = build_dictionary_table(orig_raw, trans_raw);
+dict_table = calc_prob_table(dict_table, 5);
+write_dict_to_csv(dict_table, 'models/dict.csv');
+
+for key in dict_table:
+    if 'i.' in dict_table[key]:
+        print("ERRROR");
