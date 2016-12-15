@@ -143,6 +143,9 @@ def create_sentence_set(orig_raw, trans_raw):
         sent_trans = sent_tokenize(trans_raw[i]);
         if len(sent_orig) == 1 and len(sent_trans) == 1:
             parallel_corpus.append([sent_orig[0], sent_trans[0]]);
+        elif len(sent_orig) == len(sent_trans):
+            for i in range(0, len(sent_orig)):
+                parallel_corpus.append([sent_orig[i], sent_trans[i]]);
         else:
             non_parallel_corpus.append([sent_orig, sent_trans]);
         bar.next();
@@ -164,20 +167,20 @@ def create_non_parallel_corpus(non_parallel_corpus, file_name_orig, file_name_tr
     for i in range(0, len(non_parallel_corpus)):
         file_id = open(file_name_orig+'_'+str(i)+'.txt', 'w');
         for j in range(0, len(non_parallel_corpus[i][0])):
-            file_id.write(non_parallel_corpus[i][0][j] + '\n');
+            file_id.write((non_parallel_corpus[i][0][j] + '\n').encode('utf-8', 'ignore'));
         file_id.close();
         file_id = open(file_name_trans+'_'+str(i)+'.txt', 'w');
         for j in range(0, len(non_parallel_corpus[i][1])):
-            file_id.write(non_parallel_corpus[i][1][j] + '\n');
+            file_id.write((non_parallel_corpus[i][1][j] + '\n').encode('utf-8', 'ignore'));
         file_id.close();
         bar.next();
     bar.finish();
 
 orig_raw, trans_raw = read_file("original_text.txt", "translation_text.txt");
-parallel_corpus, non_parallel_corpus = create_sentence_set(orig_raw, trans_raw);
-# create_corpus(parallel_corpus, 'models/corpora.en-sk');
+#parallel_corpus, non_parallel_corpus = create_sentence_set(orig_raw, trans_raw);
+#create_corpus(parallel_corpus, 'models/corpora.en-sk');
 
-# dict_table = build_dictionary_table(orig_raw, trans_raw);
-# dict_table = calc_prob_table(dict_table, 1);
-# write_dict_to_csv(dict_table, 'models/dict.csv');
-create_non_parallel_corpus(non_parallel_corpus, 'models/align_model/non_parallel_corpus/orig', 'models/align_model/non_parallel_corpus/trans');
+dict_table = build_dictionary_table(orig_raw, trans_raw);
+dict_table = calc_prob_table(dict_table, 5);
+write_dict_to_csv(dict_table, 'models/dict.csv');
+#create_non_parallel_corpus(non_parallel_corpus, 'models/align_model/non_parallel_corpus/orig', 'models/align_model/non_parallel_corpus/trans');

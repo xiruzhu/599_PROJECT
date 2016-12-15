@@ -148,6 +148,19 @@ def create_input(orig_text, trans_text, full_orig_text, full_trans_text):
     # y_val = data_orig[-nb_validation_samples:]
     return x_train, y_train, x_val, y_val, word_index_orig, word_index_trans, word_original;
 
+def create_input_from_preprocessed_file(file_name):
+    read_file = open(orig_file_name, 'r');
+    read_raw = read_file.read();
+    read_file.close();
+
+    sentence_split = read_raw.split('\n');
+    orig_sent = [];
+    trans_sent = [];
+    for i in range(0, len(sentence_split), 2):
+        orig_sent.append(START_TOKEN + sentence_split[i] + END_TOKEN);
+        trans_sent.append(START_TOKEN + sentence_split[i+1] + END_TOKEN);
+    return orig_sent, trans_sent;
+
 orig_text, trans_text, full_orig_text, full_trans_text = read_file("original_text.txt", "translation_text.txt", MAX_SEQ_LENGTH_WITHOUT_PAD);
 x_train, y_train, x_val, y_val, word_index_orig, word_index_trans, word_freq_original = create_input(orig_text, trans_text, full_orig_text, full_trans_text);
 
